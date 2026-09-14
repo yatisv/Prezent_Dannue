@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Как хранятся данные?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-size: 20px;
+            line-height: 1.6;
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .circle:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .circle:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 5s;
+        }
+
+        .circle:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            top: 40%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .presentation {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 30px;
+            padding: 60px;
+            margin-bottom: 30px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            display: none;
+            animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-height: 700px;
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateX(100px) scale(0.9);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .slide.active .definition,
+        .slide.active .info-box,
+        .slide.active .comparison-box,
+        .slide.active .task-card,
+        .slide.active .example-box,
+        .slide.active .pixel-demo,
+        .slide.active .unit-card {
+            animation: fadeInUp 0.8s ease forwards;
+            opacity: 0;
+        }
+
+        .slide.active .definition:nth-child(1) { animation-delay: 0.2s; }
+        .slide.active .definition:nth-child(2) { animation-delay: 0.4s; }
+        .slide.active .info-box:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            font-size: 3.5em;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.15);
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        h2 {
+            color: #764ba2;
+            margin-bottom: 30px;
+            font-size: 2.8em;
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 15px;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            animation: expandWidth 1s ease forwards;
+        }
+
+        @keyframes expandWidth {
+            from { width: 0; }
+            to { width: 100px; }
+        }
+
+        h3 {
+            color: #667eea;
+            margin: 25px 0 15px 0;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.8em;
+            margin-bottom: 40px;
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .definition {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-left: 6px solid #667eea;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 15px;
+            font-size: 1.3em;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .definition:hover {
+            transform: translateX(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .definition strong {
+            color: #764ba2;
+            font-size: 1.2em;
+            display: inline-block;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 6px solid #2196f3;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+            font-size: 1.3em;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .info-box:hover {
+            transform: translateX(10px);
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.3);
+        }
+
+        .info-box.success {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left-color: #4caf50;
+        }
+
+        .info-box.warning {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-left-color: #f44336;
+        }
+
+        .info-box.orange {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-left-color: #ff9800;
+        }
+
+        .info-box.purple {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-left-color: #9c27b0;
+        }
+
+        .comparison-box {
+            background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+            border: 4px solid #fbc02d;
+            border-radius: 20px;
+            padding: 35px;
+            margin: 30px 0;
+            font-size: 1.3em;
+            box-shadow: 0 10px 30px rgba(251, 192, 45, 0.3);
+        }
+
+        .example-box {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border: 3px solid #9c27b0;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            font-size: 1.2em;
+            box-shadow: 0 5px 20px rgba(156, 39, 176, 0.2);
+        }
+
+        .example-box h4 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        ul, ol {
+            margin-left: 40px;
+            line-height: 2;
+            font-size: 1.2em;
+        }
+
+        li {
+            margin: 15px 0;
+        }
+
+        .task-card {
+            background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+            border: 3px solid #f9a825;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 25px 0;
+            box-shadow: 0 8px 25px rgba(249, 168, 37, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(249, 168, 37, 0.4);
+        }
+
+        .task-card h4 {
+            color: #f57f17;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-number {
+            background: #f57f17;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .column {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .column h3 {
+            margin-top: 0;
+            color: #764ba2;
+        }
+
+        /* Пиксельная демонстрация */
+        .pixel-demo {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .pixel-grid {
+            display: grid;
+            gap: 2px;
+            background: #333;
+            padding: 2px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .pixel-grid.small {
+            grid-template-columns: repeat(8, 30px);
+        }
+
+        .pixel-grid.large {
+            grid-template-columns: repeat(8, 60px);
+        }
+
+        .pixel {
+            width: 30px;
+            height: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pixel:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .pixel.large {
+            width: 60px;
+            height: 60px;
+        }
+
+        .pixel.black {
+            background: #000;
+        }
+
+        .pixel.white {
+            background: #fff;
+            border: 1px solid #ccc;
+        }
+
+        .binary-code {
+            background: #263238;
+            color: #4caf50;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.3em;
+            letter-spacing: 0.2em;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            word-break: break-all;
+            max-width: 100%;
+        }
+
+        /* Карточки единиц измерения */
+        .units-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .unit-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .unit-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .unit-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%); }
+            100% { transform: translateX(100%) translateY(100%); }
+        }
+
+        .unit-card h4 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .unit-card .unit-value {
+            font-size: 1.1em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .unit-card.bit { background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%); }
+        .unit-card.byte { background: linear-gradient(135deg, #2196f3 0%, #42a5f5 100%); }
+        .unit-card.kb { background: linear-gradient(135deg, #ff9800 0%, #ffa726 100%); }
+        .unit-card.mb { background: linear-gradient(135deg, #f44336 0%, #ef5350 100%); }
+        .unit-card.gb { background: linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%); }
+        .unit-card.tb { background: linear-gradient(135deg, #607d8b 0%, #78909c 100%); }
+
+        .conversion-example {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 5px solid #4caf50;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            line-height: 2;
+        }
+
+        .conversion-step {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #4caf50;
+        }
+
+        .conversion-arrow {
+            text-align: center;
+            font-size: 1.5em;
+            color: #4caf50;
+            margin: 5px 0;
+        }
+
+        /* Скрытые решения */
+        .solution-hidden {
+            display: none;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 5px solid #4caf50;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .solution-hidden.show {
+            display: block;
+        }
+
+        .show-solution-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .show-solution-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        /* Навигационные кнопки */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            width: 80px;
+            height: 80px;
+            font-size: 2.5em;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        #prevBtn {
+            left: 30px;
+        }
+
+        #nextBtn {
+            right: 130px;
+        }
+
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            font-size: 1.8em;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+        }
+
+        .slide-counter {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 1.5em;
+            background: rgba(0,0,0,0.5);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            animation: highlightPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes highlightPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .emoji-float {
+            display: inline-block;
+            animation: emojiFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes emojiFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(5deg); }
+            75% { transform: translateY(10px) rotate(-5deg); }
+        }
+
+        .final-emoji {
+            font-size: 4em;
+            display: inline-block;
+            animation: celebrate 1s ease infinite;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(10deg); }
+            50% { transform: scale(1) rotate(0deg); }
+            75% { transform: scale(1.2) rotate(-10deg); }
+        }
+
+        .question-box {
+            background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%);
+            border: 3px solid #03a9f4;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            font-size: 1.4em;
+            box-shadow: 0 8px 25px rgba(3, 169, 244, 0.3);
+        }
+
+        .question-box .emoji {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .data-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .data-type {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-top: 4px solid #667eea;
+        }
+
+        .data-type:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .data-type .emoji {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .data-type h4 {
+            color: #764ba2;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+            
+            .slide {
+                padding: 30px 20px;
+                min-height: 600px;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            h2 {
+                font-size: 1.8em;
+            }
+            
+            .nav-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 2em;
+            }
+            
+            #prevBtn {
+                left: 10px;
+            }
+            
+            #nextBtn {
+                right: 90px;
+            }
+            
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .pixel-grid.large {
+                grid-template-columns: repeat(8, 40px);
+            }
+
+            .pixel.large {
+                width: 40px;
+                height: 40px;
+            }
+
+            .pixel-grid.small {
+                grid-template-columns: repeat(8, 20px);
+            }
+
+            .pixel {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="presentation">
+        <!-- Слайд 1: Титульный -->
+        <div class="slide active" id="slide1">
+            <h1><span class="emoji-float">💾</span> Как хранятся данные?</h1>
+            <p class="subtitle">Информатика</p>
+            <div style="text-align: center; margin: 50px 0;">
+                <div style="font-size: 5em;">
+                    <span class="emoji-float">0️⃣</span> 
+                    <span class="emoji-float" style="animation-delay: 0.3s;">1️⃣</span> 
+                    <span class="emoji-float" style="animation-delay: 0.6s;">🖼️</span>
+                </div>
+            </div>
+            <div class="info-box" style="text-align: center; font-size: 1.4em;">
+                <strong>Ключевые понятия:</strong><br>
+                Кодирование • Двоичный код • Пиксели<br>
+                Биты, байты, килобайты, мегабайты
+            </div>
+        </div>
+
+        <!-- Слайд 2: Введение -->
+        <div class="slide" id="slide2">
+            <h2>🤔 Как сохранить знания?</h2>
+            
+            <div class="question-box">
+                <div class="emoji">💭</div>
+                <p>Как можно знания, находящиеся у вас «в голове», передать другим людям или сохранить для потомков?</p>
+            </div>
+
+            <div class="definition">
+                <strong>Компьютеры</strong> — это универсальные устройства, они могут обрабатывать разные виды данных: числа, тексты, звуки, рисунки.
+            </div>
+
+            <h3>📦 Все виды данных:</h3>
+            
+            <div class="data-types">
+                <div class="data-type">
+                    <div class="emoji">🔢</div>
+                    <h4>Числа</h4>
+                </div>
+                <div class="data-type">
+                    <div class="emoji">📝</div>
+                    <h4>Тексты</h4>
+                </div>
+                <div class="data-type">
+                    <div class="emoji">🎵</div>
+                    <h4>Звуки</h4>
+                </div>
+                <div class="data-type">
+                    <div class="emoji">🖼️</div>
+                    <h4>Рисунки</h4>
+                </div>
+            </div>
+
+            <div class="info-box orange">
+                <strong>💡 Важно!</strong><br>
+                Все эти данные хранятся в одной и той же памяти, поэтому их нужно представлять (кодировать) одним и тем же способом — так, как удобно для компьютера.
+            </div>
+        </div>
+
+        <!-- Слайд 3: Кодирование -->
+        <div class="slide" id="slide3">
+            <h2>🔐 Кодирование информации</h2>
+            
+            <div class="definition">
+                <strong>Кодирование</strong> — это представление информации в форме, удобной для её хранения, передачи и обработки.
+            </div>
+
+            <div class="info-box success">
+                <strong>🖥️ Язык компьютера:</strong><br>
+                Язык, понятный компьютеру, — это <span class="highlight">нули и единицы</span>. Это значит, что данные всех видов хранятся, обрабатываются и передаются как цепочки нулей и единиц.
+            </div>
+
+            <div class="comparison-box">
+                <h3>🔢 Двоичный код</h3>
+                <p style="font-size: 1.2em; margin: 15px 0;">
+                    <strong>Двоичный код</strong> — это код, в котором используются только два знака (обычно <strong>0</strong> и <strong>1</strong>).
+                </p>
+                <div style="text-align: center; font-size: 2em; margin: 20px 0; font-family: 'Courier New', monospace; color: #4caf50;">
+                    01001000 01100101 01101100 01101100 01101111
+                </div>
+                <p style="text-align: center; font-size: 1.1em;">
+                    Говорят, что данные закодированы с помощью <strong>двоичного кода</strong>.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <strong>📏 Равномерный код:</strong><br>
+                Код, в котором все кодовые слова имеют одинаковую длину, называется <span class="highlight">равномерным</span>.
+            </div>
+
+            <div class="info-box purple">
+                <strong>💬 Сообщение:</strong><br>
+                Цепочку символов, полученную в результате кодирования, называют <span class="highlight">сообщением</span>.
+            </div>
+        </div>
+
+        <!-- Слайд 4: Пиксели -->
+        <div class="slide" id="slide4">
+            <h2>🔲 Пиксели и растровые изображения</h2>
+            
+            <div class="definition">
+                <strong>Пиксель</strong> — это наименьший элемент цифрового рисунка, для которого можно задать свой цвет независимо от других элементов.
+            </div>
+
+            <div class="info-box">
+                <strong>🔍 Увеличение рисунка:</strong><br>
+                При работе с графическими редакторами вы, возможно, видели, что получается, если очень сильно увеличить рисунок — изображение состоит из отдельных квадратиков!
+            </div>
+
+            <div class="pixel-demo">
+                <h3 style="color: #764ba2;">🖼️ Рисунок из пикселей:</h3>
+                <div class="pixel-grid small">
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel black"></div>
+                    <div class="pixel white"></div>
+                    <div class="pixel white"></div>
+                </div>
+            </div>
+
+            <div class="info-box success">
+                <strong>🎨 Растровый рисунок:</strong><br>
+                Рисунок, который представлен в компьютере в виде набора пикселей, называют <span class="highlight">растровым</span> или <span class="highlight">точечным</span>.
+            </div>
+        </div>
+
+        <!-- Слайд 5: Кодирование рисунков -->
+        <div class="slide" id="slide5">
+            <h2>🎨 Кодирование рисунков</h2>
+            
+            <div class="definition">
+                Для того чтобы закодировать рисунок, нужно для каждого цвета определить кодовое слово (цепочку нулей и единиц).
+            </div>
+
+            <div class="example-box">
+                <h4>📝 Пример: чёрно-белый рисунок</h4>
+                <p>Пусть для простоты рисунок будет чёрно-белым:</p>
+                <ul style="margin-left: 20px;">
+                    <li>Пиксель <strong>чёрного</strong> цвета = <strong>1</strong></li>
+                    <li>Пиксель <strong>белого</strong> цвета = <strong>0</strong></li>
+                </ul>
+            </div>
+
+            <div class="pixel-demo">
+                <h3 style="color: #764ba2;">🖼️ Увеличенный рисунок:</h3>
+                <div class="pixel-grid large">
+                    <div class="pixel white large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel white large"></div>
+                    <div class="pixel black large"></div>
+                    <div class="pixel black large"></div>
+                </div>
+            </div>
+
+            <div class="comparison-box">
+                <h3>🔢 Двоичный код рисунка:</h3>
+                <p style="font-size: 1.1em; margin: 15px 0;">Выписываем по строкам:</p>
+                <div class="binary-code">
+                    0010001110111110101001110
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 6: Измерение информации -->
+        <div class="slide" id="slide6">
+            <h2>📏 Измерение информации</h2>
+            
+            <div class="definition">
+                Измерить информацию не так-то просто, поскольку для человека информация — это смысл сообщения, который зависит от его предыдущих знаний.
+            </div>
+
+            <div class="info-box success">
+                <strong>💻 Для компьютера:</strong><br>
+                Если информация записана в виде цепочек из 0 и 1, задача упрощается: достаточно просто измерять и сравнивать <span class="highlight">длину этих цепочек</span> — объём данных.
+            </div>
+
+            <div class="two-columns">
+                <div class="column" style="border-left-color: #4caf50; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+                    <h3>👤 Для человека</h3>
+                    <p style="font-size: 1.1em; margin: 15px 0;">
+                        Информация — это <strong>смысл сообщения</strong>. Количество информации зависит от того, что человек уже знает.
+                    </p>
+                </div>
+                <div class="column" style="border-left-color: #2196f3; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+                    <h3>🖥️ Для компьютера</h3>
+                    <p style="font-size: 1.1em; margin: 15px 0;">
+                        Информация — это просто <strong>набор нулей и единиц</strong>. Количество информации определяет только «затраты» на её хранение и передачу.
+                    </p>
+                </div>
+            </div>
+
+            <div class="info-box orange">
+                <strong>💡 Важно!</strong><br>
+                Только человек может придать данным какой-то смысл. При этом можно сразу сказать, сколько места в памяти потребуется для хранения рисунка или текста.
+            </div>
+        </div>
+
+        <!-- Слайд 7: Бит -->
+        <div class="slide" id="slide7">
+            <h2>🔢 Бит — единица информации</h2>
+            
+            <div class="definition">
+                Чтобы подчеркнуть, что информация в компьютерах записана с помощью двоичного алфавита, ввели специальную единицу измерения — <strong>бит</strong>.
+            </div>
+
+            <div class="comparison-box">
+                <h3>📚 Происхождение слова «бит»</h3>
+                <p style="font-size: 1.2em; margin: 15px 0;">
+                    От английских слов <strong>binary digit</strong> — «двоичная цифра»
+                </p>
+                <div style="text-align: center; font-size: 1.5em; margin: 20px 0;">
+                    <span style="background: white; padding: 10px 20px; border-radius: 10px; margin: 0 10px;">binary</span>
+                    <span style="color: #f57f17;">+</span>
+                    <span style="background: white; padding: 10px 20px; border-radius: 10px; margin: 0 10px;">digit</span>
+                    <span style="color: #4caf50;">=</span>
+                    <span style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%); color: white; padding: 10px 20px; border-radius: 10px; margin: 0 10px;">бит</span>
+                </div>
+            </div>
+
+            <div class="info-box success">
+                <strong>⭐ Определение:</strong><br>
+                <strong>Бит</strong> — это одна двоичная цифра (один символ: 0 или 1).
+            </div>
+
+            <div class="info-box">
+                <strong>📏 Как измерить:</strong><br>
+                Для того чтобы измерить количество информации в битах, нужно просто измерить <span class="highlight">длину цепочки нулей и единиц</span>, в виде которой записаны данные.
+            </div>
+
+            <div class="example-box">
+                <h4>📝 Пример:</h4>
+                <p>Двоичный код: <span class="binary-code" style="display: inline-block; padding: 10px 20px; font-size: 1em;">10110101</span></p>
+                <p style="margin-top: 15px;">Длина цепочки = <strong>8 символов</strong> = <strong>8 бит</strong></p>
+            </div>
+        </div>
+
+        <!-- Слайд 8: Единицы измерения -->
+        <div class="slide" id="slide8">
+            <h2>📊 Единицы измерения информации</h2>
+            
+            <div class="info-box warning">
+                <strong>⚠️ Проблема:</strong><br>
+                В памяти компьютера хранятся <strong>миллиарды битов</strong>, поэтому для измерения больших объёмов данных введены более крупные единицы.
+            </div>
+
+            <div class="units-grid">
+                <div class="unit-card bit">
+                    <h4>1 бит</h4>
+                    <div class="unit-value">одна двоичная цифра</div>
+                </div>
+                <div class="unit-card byte">
+                    <h4>1 байт</h4>
+                    <div class="unit-value">= 8 бит</div>
+                </div>
+                <div class="unit-card kb">
+                    <h4>1 Кбайт</h4>
+                    <div class="unit-value">= 1024 байта</div>
+                </div>
+                <div class="unit-card mb">
+                    <h4>1 Мбайт</h4>
+                    <div class="unit-value">= 1024 Кбайт</div>
+                </div>
+                <div class="unit-card gb">
+                    <h4>1 Гбайт</h4>
+                    <div class="unit-value">= 1024 Мбайт</div>
+                </div>
+                <div class="unit-card tb">
+                    <h4>1 Тбайт</h4>
+                    <div class="unit-value">= 1024 Гбайт</div>
+                </div>
+            </div>
+
+            <div class="comparison-box">
+                <h3>🎯 Запомните!</h3>
+                <p style="font-size: 1.2em; margin: 15px 0;">
+                    Каждая следующая единица в <strong>1024 раза больше</strong> предыдущей!<br>
+                    (1024 = 2¹⁰ — степень двойки, удобная для компьютера)
+                </p>
+            </div>
+
+            <div class="info-box success">
+                <strong>💡 Аналогия:</strong><br>
+                Как в обычной жизни: 1 метр = 100 см, 1 километр = 1000 метров.<br>
+                Так и здесь: 1 Кбайт = 1024 байта, 1 Мбайт = 1024 Кбайта.
+            </div>
+        </div>
+
+        <!-- Слайд 9: Перевод единиц -->
+        <div class="slide" id="slide9">
+            <h2>🔄 Перевод единиц измерения</h2>
+            
+            <div class="definition">
+                Чтобы перевести информацию из одних единиц в другие, нужно использовать соотношения между ними.
+            </div>
+
+            <div class="example-box">
+                <h4>📝 Пример: Переведём 2 Кбайт в биты</h4>
+                
+                <div class="conversion-example">
+                    <div class="conversion-step">
+                        <strong>Шаг 1:</strong> Переведём Кбайты в байты<br>
+                        2 Кбайт = 2 × 1024 байт = <strong>2048 байт</strong>
+                    </div>
+                    <div class="conversion-arrow">↓</div>
+                    <div class="conversion-step">
+                        <strong>Шаг 2:</strong> Переведём байты в биты<br>
+                        2048 байт = 2048 × 8 бит = <strong>16 384 бита</strong>
+                    </div>
+                </div>
+
+                <p style="margin-top: 20px; font-size: 1.3em; text-align: center; color: #4caf50;">
+                    <strong>Ответ: 2 Кбайт = 16 384 бита</strong>
+                </p>
+            </div>
+
+            <div class="info-box">
+                <strong>📋 Правила перевода:</strong>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Из <strong>крупных</strong> единиц в <strong>мелкие</strong> → <span class="highlight">умножаем</span></li>
+                    <li>Из <strong>мелких</strong> единиц в <strong>крупные</strong> → <span class="highlight">делим</span></li>
+                </ul>
+            </div>
+
+            <div class="info-box orange">
+                <strong>💡 Важно помнить:</strong><br>
+                • 1 байт = 8 бит<br>
+                • 1 Кбайт = 1024 байта<br>
+                • 1 Мбайт = 1024 Кбайта
+            </div>
+        </div>
+
+        <!-- Слайд 10: Задания на перевод -->
+        <div class="slide" id="slide10">
+            <h2>📚 Задания на перевод единиц</h2>
+            
+            <div class="task-card">
+                <h4><span class="task-number">1</span> Переведите 5 Кбайт в байты</h4>
+                <button class="show-solution-btn" onclick="toggleSolution('solution10-1')">👁️ Показать решение</button>
+                <div class="solution-hidden" id="solution10-1">
+                    <p><strong>Решение:</strong></p>
+                    <div class="conversion-example">
+                        5 Кбайт = 5 × 1024 байт = <strong>5120 байт</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h4><span class="task-number">2</span> Переведите 3 Мбайт в Кбайты</h4>
+                <button class="show-solution-btn" onclick="toggleSolution('solution10-2')">👁️ Показать решение</button>
+                <div class="solution-hidden" id="solution10-2">
+                    <p><strong>Решение:</strong></p>
+                    <div class="conversion-example">
+                        3 Мбайт = 3 × 1024 Кбайт = <strong>3072 Кбайт</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h4><span class="task-number">3</span> Переведите 2048 байт в Кбайты</h4>
+                <button class="show-solution-btn" onclick="toggleSolution('solution10-3')">👁️ Показать решение</button>
+                <div class="solution-hidden" id="solution10-3">
+                    <p><strong>Решение:</strong></p>
+                    <div class="conversion-example">
+                        2048 байт = 2048 : 1024 Кбайт = <strong>2 Кбайт</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h4><span class="task-number">4</span> Переведите 4 байта в биты</h4>
+                <button class="show-solution-btn" onclick="toggleSolution('solution10-4')">👁️ Показать решение</button>
+                <div class="solution-hidden" id="solution10-4">
+                    <p><strong>Решение:</strong></p>
+                    <div class="conversion-example">
+                        4 байта = 4 × 8 бит = <strong>32 бита</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 11: Дополнительные задания -->
+        <div class="slide" id="slide11">
+            <h2>🎯 Дополнительные задания</h2>
+            
+            <div class="task-card">
+                <h4><span class="task-number">5</span> Переведите 1,5 Мбайт в байты</h4>
+                <button class="show-solution-btn" onclick="toggleSolution('solution11-1')">👁️ Показать решение</button>
+                <div class="solution-hidden" id="solution11-1">
+                    <p><strong>Решение:</strong></p>
+                    <div class="conversion-example">
+                        1,5 Мбайт = 1,5 × 1024 Кбайт = 1536 Кбайт<br>
+                        1536 Кбайт = 1536 × 1024 байт = <strong>1 572 864 байта</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h4><span class="task-number">6</span> Сколько бит в 1 Кбайте?</h4>
+                <button class="show-solution-btn" onclick="toggleSolution('solution11-2')">👁️ Показать решение</button>
+                <div class="solution-hidden" id="solution11-2">
+                    <p><strong>Решение:</strong></p>
+                    <div class="conversion-example">
+                        1 Кбайт = 1024 байта<br>
+                        1024 байта = 1024 × 8 бит = <strong>8192 бита</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h4><span class="task-number">7</span> Растровый рисунок 8×8 пикселей чёрно-белый. Сколько бит нужно для его хранения?</h4>
+                <button class="show-solution-btn" onclick="toggleSolution('solution11-3')">👁️ Показать решение</button>
+                <div class="solution-hidden" id="solution11-3">
+                    <p><strong>Решение:</strong></p>
+                    <div class="conversion-example">
+                        Количество пикселей = 8 × 8 = 64 пикселя<br>
+                        Каждый пиксель = 1 бит (чёрный или белый)<br>
+                        Всего: 64 × 1 = <strong>64 бита</strong> = 8 байт
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h4><span class="task-number">8</span> Переведите 5120 бит в Кбайты</h4>
+                <button class="show-solution-btn" onclick="toggleSolution('solution11-4')">👁️ Показать решение</button>
+                <div class="solution-hidden" id="solution11-4">
+                    <p><strong>Решение:</strong></p>
+                    <div class="conversion-example">
+                        5120 бит = 5120 : 8 = 640 байт<br>
+                        640 байт = 640 : 1024 = <strong>0,625 Кбайт</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 12: Итоги -->
+        <div class="slide" id="slide12">
+            <h2>✅ Итоги урока</h2>
+            
+            <div class="definition">
+                <strong>📖 Основные выводы:</strong>
+                <ul style="margin-left: 30px; margin-top: 15px;">
+                    <li><strong>Кодирование</strong> — представление информации в форме, удобной для хранения, передачи и обработки</li>
+                    <li><strong>Двоичный код</strong> — код, использующий только два знака: 0 и 1</li>
+                    <li><strong>Пиксель</strong> — наименьший элемент цифрового рисунка</li>
+                    <li><strong>Растровый рисунок</strong> — рисунок, представленный в виде множества пикселей</li>
+                    <li><strong>Бит</strong> — одна двоичная цифра (0 или 1)</li>
+                    <li>Для измерения больших объёмов используют: байт, Кбайт, Мбайт, Гбайт, Тбайт</li>
+                </ul>
+            </div>
+
+            <div class="comparison-box">
+                <h3>🔢 Соотношения единиц:</h3>
+                <div style="margin-top: 15px; font-size: 1.2em;">
+                    <p>1 байт = <strong>8 бит</strong></p>
+                    <p>1 Кбайт = <strong>1024 байта</strong></p>
+                    <p>1 Мбайт = <strong>1024 Кбайта</strong></p>
+                    <p>1 Гбайт = <strong>1024 Мбайта</strong></p>
+                    <p>1 Тбайт = <strong>1024 Гбайта</strong></p>
+                </div>
+            </div>
+
+            <div class="info-box success" style="text-align: center; font-size: 1.5em; margin-top: 30px;">
+                🎓 <strong>Молодцы! Теперь вы знаете, как хранятся данные в компьютере!</strong> 🎓
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <span class="final-emoji">🌟</span>
+                <span class="final-emoji" style="animation-delay: 0.2s;">💾</span>
+                <span class="final-emoji" style="animation-delay: 0.4s;">🎉</span>
+            </div>
+        </div>
+    </div>
+
+    <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>←</button>
+    <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">→</button>
+
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Развернуть на весь экран">⛶</button>
+
+    <div class="slide-counter">
+        Слайд <span id="currentSlide">1</span> из <span id="totalSlides">12</span>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 12;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            
+            if (n > totalSlides) currentSlide = 1;
+            if (n < 1) currentSlide = totalSlides;
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            document.getElementById('slide' + currentSlide).classList.add('active');
+            
+            document.getElementById('currentSlide').textContent = currentSlide;
+            document.getElementById('totalSlides').textContent = totalSlides;
+            
+            const progress = (currentSlide / totalSlides) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function changeSlide(n) {
+            currentSlide += n;
+            showSlide(currentSlide);
+        }
+
+        function toggleSolution(id) {
+            const solution = document.getElementById(id);
+            const button = solution.previousElementSibling;
+            
+            if (solution.classList.contains('show')) {
+                solution.classList.remove('show');
+                button.textContent = '👁️ Показать решение';
+            } else {
+                solution.classList.add('show');
+                button.textContent = '🙈 Скрыть решение';
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                if (currentSlide < totalSlides) {
+                    changeSlide(1);
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlide > 1) {
+                    changeSlide(-1);
+                }
+            } else if (e.key === 'f' || e.key === 'F') {
+                toggleFullscreen();
+            }
+        });
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.mozFullScreenElement && 
+                !document.msFullscreenElement) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+        document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+        document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+        function updateFullscreenButton() {
+            const btn = document.querySelector('.fullscreen-btn');
+            if (document.fullscreenElement || 
+                document.webkitFullscreenElement || 
+                document.mozFullScreenElement || 
+                document.msFullscreenElement) {
+                btn.innerHTML = '⛶';
+                btn.title = 'Свернуть';
+            } else {
+                btn.innerHTML = '⛶';
+                btn.title = 'Развернуть на весь экран';
+            }
+        }
+
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>
